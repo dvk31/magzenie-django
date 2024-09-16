@@ -1,0 +1,411 @@
+{
+    "name": "DynamicModelAgent",
+    "description": "An agent that dynamically manages models based on user input and context.",
+    "version": "1.0",
+    "functions": [
+      {
+        "name": "process_task",
+        "description": "Processes a task related to dynamic models.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "task": {
+              "type": "string",
+              "description": "The specific task to perform"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the task"
+            }
+          },
+          "required": ["user_input", "task", "context"]
+        }
+      },
+      {
+        "name": "extract_model_name",
+        "description": "Extracts the model name from user input or context.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the task"
+            }
+          },
+          "required": ["user_input", "context"]
+        }
+      },
+      {
+        "name": "get_or_create_dynamic_model",
+        "description": "Gets or creates a dynamic model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            }
+          },
+          "required": ["model_name"]
+        }
+      },
+      {
+        "name": "generate_ai_prompt",
+        "description": "Generates an AI prompt for the task.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "task": {
+              "type": "string",
+              "description": "The specific task to perform"
+            },
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "existing_fields": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "description": "Existing fields of the model"
+            }
+          },
+          "required": ["task", "user_input", "model_name", "existing_fields"]
+        }
+      },
+      {
+        "name": "get_existing_fields",
+        "description": "Gets existing fields of a model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            }
+          },
+          "required": ["model_name"]
+        }
+      },
+      {
+        "name": "process_ai_response",
+        "description": "Processes the AI response for a model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "ai_response": {
+              "type": "object",
+              "description": "The AI response"
+            }
+          },
+          "required": ["model_name", "ai_response"]
+        }
+      },
+      {
+        "name": "create_dynamic_model",
+        "description": "Creates a new dynamic model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "description": {
+              "type": "string",
+              "description": "The description of the model"
+            },
+            "is_profile_type": {
+              "type": "boolean",
+              "description": "Whether the model is a profile type"
+            },
+            "is_request_type": {
+              "type": "boolean",
+              "description": "Whether the model is a request type"
+            }
+          },
+          "required": ["name", "description"]
+        }
+      },
+      {
+        "name": "get_dynamic_model",
+        "description": "Gets a dynamic model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the model"
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      {
+        "name": "update_dynamic_model",
+        "description": "Updates a dynamic model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "new_data": {
+              "type": "object",
+              "description": "New data for updating the model"
+            }
+          },
+          "required": ["name", "new_data"]
+        }
+      },
+      {
+        "name": "delete_dynamic_model",
+        "description": "Deletes a dynamic model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the model"
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      {
+        "name": "create_dynamic_field",
+        "description": "Creates a new dynamic field.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "field_name": {
+              "type": "string",
+              "description": "The name of the field"
+            },
+            "field_type": {
+              "type": "string",
+              "description": "The type of the field"
+            },
+            "required": {
+              "type": "boolean",
+              "description": "Whether the field is required"
+            },
+            "choices": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Choices for the field"
+            }
+          },
+          "required": ["model_name", "field_name", "field_type"]
+        }
+      },
+      {
+        "name": "get_dynamic_field",
+        "description": "Gets a dynamic field.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "field_name": {
+              "type": "string",
+              "description": "The name of the field"
+            }
+          },
+          "required": ["model_name", "field_name"]
+        }
+      },
+      {
+        "name": "update_dynamic_field",
+        "description": "Updates a dynamic field.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "field_name": {
+              "type": "string",
+              "description": "The name of the field"
+            },
+            "new_data": {
+              "type": "object",
+              "description": "New data for updating the field"
+            }
+          },
+          "required": ["model_name", "field_name", "new_data"]
+        }
+      },
+      {
+        "name": "delete_dynamic_field",
+        "description": "Deletes a dynamic field.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "field_name": {
+              "type": "string",
+              "description": "The name of the field"
+            }
+          },
+          "required": ["model_name", "field_name"]
+        }
+      },
+      {
+        "name": "create_dynamic_instance",
+        "description": "Creates a new dynamic instance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "field_values": {
+              "type": "object",
+              "description": "Field values for the instance"
+            }
+          },
+          "required": ["model_name", "field_values"]
+        }
+      },
+      {
+        "name": "get_dynamic_instance",
+        "description": "Gets a dynamic instance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "instance_id": {
+              "type": "string",
+              "description": "The ID of the instance"
+            }
+          },
+          "required": ["model_name", "instance_id"]
+        }
+      },
+      {
+        "name": "get_dynamic_instances",
+        "description": "Gets all dynamic instances for a model.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            }
+          },
+          "required": ["model_name"]
+        }
+      },
+      {
+        "name": "update_dynamic_instance",
+        "description": "Updates a dynamic instance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "instance_id": {
+              "type": "string",
+              "description": "The ID of the instance"
+            },
+            "field_values": {
+              "type": "object",
+              "description": "New field values for the instance"
+            }
+          },
+          "required": ["model_name", "instance_id", "field_values"]
+        }
+      },
+      {
+        "name": "delete_dynamic_instance",
+        "description": "Deletes a dynamic instance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "instance_id": {
+              "type": "string",
+              "description": "The ID of the instance"
+            }
+          },
+          "required": ["model_name", "instance_id"]
+        }
+      },
+      {
+        "name": "get_instance_field_values",
+        "description": "Gets field values for a dynamic instance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "The name of the model"
+            },
+            "instance_id": {
+              "type": "string",
+              "description": "The ID of the instance"
+            }
+          },
+          "required": ["model_name", "instance_id"]
+        }
+      },
+      {
+        "name": "link_model_to_app",
+        "description": "Links a dynamic model to an app.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "model_id": {
+              "type": "string",
+              "description": "The ID of the model"
+            },
+            "app_id": {
+              "type": "string",
+              "description": "The ID of the app"
+            }
+          },
+          "required": ["model_id", "app_id"]
+        }
+      }
+    ]
+  }

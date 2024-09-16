@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  version: 1.0.0
+paths:
+  /example:
+    get:
+      summary: Example GET endpoint
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Example'
+    post:
+      summary: Example POST endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Example'
+      responses:
+        '201':
+          description: Successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Example'
+        '400':
+          description: Bad request
+components:
+  schemas:
+    Example:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the example
+        name:
+          type: string
+          description: Name of the example
+      required:
+        - name

@@ -1,0 +1,82 @@
+{
+    "auth_token": "72c07d9aff76522cafc06e6e255ba0d2438aad6b",
+    "tryout": {
+      "tryout_space_id": "1414d75d-6b1a-4a59-a10f-b6b4bf1fead3",
+      "title": "Tryout Title",
+      "description": "Tryout Description",
+      "is_published": true,
+      "published_at": "2023-01-01T00:00:00Z",
+      "tryout_category": null,
+      "roles": [],
+      "user_input": null,
+      "company": null,
+      "ai_agent": null,
+      "goal": null,
+      "configuration_template": null,
+      "tryout_cta": null
+    },
+    "resource_content": [
+      {
+        "user": null,
+        "title": "Resource Content Title",
+        "description": "Resource Content Description",
+        "source_author": "Author Name",
+        "check_in_types": [
+          {
+            "name": "Check-In Type Name",
+            "description": "Check-In Type Description"
+          }
+        ],
+        "link": "http://example.com/resource-link",
+        "words": 1234,
+        "duration": 120,
+        "content_type": "text",
+        "content_stub": "Content Stub",
+        "cover_image": "http://example.com/cover-image.jpg",
+        "order": 1,
+        "is_gpt_processed": false
+      }
+    ],
+    "ai_generated_resource_content": [
+      {
+        "generated_content": {
+          "key1": "value1",
+          "key2": "value2"
+        }
+      }
+    ],
+    "file_upload_requirement": [
+      {
+        "file_type": "pdf"
+      }
+    ],
+    "check_in": [
+      {
+        "title": "Check-In Title"
+      }
+    ],
+    "check_in_visibility_setting": [
+      {
+        "visibility": "public"
+      }
+    ],
+    "tryout_settings": {
+      "is_quiz_required": false,
+      "is_one_on_one_enabled": true,
+      "is_cohort_based": true,
+      "is_public": true,
+      "is_company_members_only": false,
+      "is_check_in_visibility_enabled": true,
+      "is_check_in_comments_enabled": true,
+      "is_check_in_reactions_enabled": true,
+      "is_check_in_responses_anonymous": false,
+      "is_check_in_responses_visible": true,
+      "track_scores": true,
+      "score_name": "ScoreNameHere"
+    },
+    "cohort": [
+      {
+        "name": "Cohort Name"
+      }
+    ]
+  }

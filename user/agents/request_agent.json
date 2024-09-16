@@ -1,0 +1,185 @@
+{
+    "name": "Request Agent",
+    "version": "1.0",
+    "description": "An AI agent specialized in processing and managing user requests, including creating and analyzing request types, intents, and dynamic models",
+    "intents": {
+      "process_request": {
+        "description": "Process a user request, creating necessary models and instances",
+        "examples": [
+          "I need a developer for my project",
+          "Looking for a job in software engineering",
+          "Can you help me with a general inquiry?"
+        ]
+      },
+      "analyze_request": {
+        "description": "Analyze a user request to determine appropriate fields and values",
+        "examples": [
+          "Analyze this job request: 'Looking for a senior Python developer'",
+          "What fields should I use for this request: 'Need a web designer for a 3-month project'",
+          "Suggest fields for: 'Seeking customer support for my recent purchase'"
+        ]
+      },
+      "get_request_details": {
+        "description": "Retrieve details of a specific user request",
+        "examples": [
+          "Show me the details of my last job request",
+          "What are the specifics of my developer request from yesterday?",
+          "Can you pull up the information on my recent general inquiry?"
+        ]
+      },
+      "list_requests": {
+        "description": "List all user requests, optionally filtered",
+        "examples": [
+          "Show all my active requests",
+          "List my job requests from the last month",
+          "What developer requests have I made recently?"
+        ]
+      }
+    },
+    "functions": [
+      {
+        "name": "process_task",
+        "description": "Process a task to handle a user request",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "task": {
+              "type": "string",
+              "description": "The specific task to perform"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the task"
+            }
+          },
+          "required": ["user_input", "task", "context"]
+        }
+      },
+      {
+        "name": "get_or_create_request_type",
+        "description": "Get or create a request type based on user input",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the request"
+            }
+          },
+          "required": ["user_input", "context"]
+        }
+      },
+      {
+        "name": "get_or_create_intent",
+        "description": "Get or create an intent based on the given name",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "intent_name": {
+              "type": "string",
+              "description": "The name of the intent"
+            }
+          },
+          "required": ["intent_name"]
+        }
+      },
+      {
+        "name": "create_user_request",
+        "description": "Create a new user request",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "request_type": {
+              "type": "object",
+              "description": "The request type object"
+            },
+            "intent": {
+              "type": "object",
+              "description": "The intent object"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the request"
+            }
+          },
+          "required": ["user_input", "request_type", "intent", "context"]
+        }
+      },
+      {
+        "name": "get_or_create_dynamic_model",
+        "description": "Get or create a dynamic model for a request type",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "request_type": {
+              "type": "object",
+              "description": "The request type object"
+            }
+          },
+          "required": ["request_type"]
+        }
+      },
+      {
+        "name": "analyze_request",
+        "description": "Analyze a user request to suggest fields and values",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "request_type": {
+              "type": "string",
+              "description": "The name of the request type"
+            },
+            "model_name": {
+              "type": "string",
+              "description": "The name of the dynamic model"
+            }
+          },
+          "required": ["user_input", "request_type", "model_name"]
+        }
+      },
+      {
+        "name": "get_user_request",
+        "description": "Retrieve details of a specific user request",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "description": "The ID of the user request"
+            }
+          },
+          "required": ["request_id"]
+        }
+      },
+      {
+        "name": "list_user_requests",
+        "description": "List all user requests, optionally filtered",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "filters": {
+              "type": "object",
+              "description": "Optional filters for the request list"
+            }
+          }
+        }
+      }
+    ],
+    "system_instructions": "You are a Request Agent specialized in processing and managing user requests. Your primary functions include creating and analyzing request types, intents, and dynamic models based on user input. When processing a task, always strive to accurately categorize the request type, determine the appropriate intent, and create or update dynamic models and instances as needed. Use AI analysis to suggest appropriate fields and values for each request. Be prepared to handle various types of requests, including but not limited to developer requests, job requests, and general inquiries. Ensure that your responses are clear, actionable, and include all relevant details about the processed request. When retrieving or listing user requests, provide comprehensive information including request types, intents, and any associated dynamic instance data."
+  }

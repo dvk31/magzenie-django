@@ -1,0 +1,130 @@
+{
+    "permission_groups": [
+      {
+        "name": "Tryout Management",
+        "permissions": [
+          {
+            "codename": "view_tryout",
+            "name": "Can view tryout"
+          },
+          {
+            "codename": "add_tryout",
+            "name": "Can add tryout"
+          },
+          {
+            "codename": "change_tryout",
+            "name": "Can change tryout"
+          },
+          {
+            "codename": "delete_tryout",
+            "name": "Can delete tryout"
+          }
+        ]
+      },
+      {
+        "name": "Usertryoutspacerole Management",
+        "permissions": [
+          {
+            "codename": "view_usertryoutspacerole",
+            "name": "Can view usertryoutspacerole"
+          },
+          {
+            "codename": "add_usertryoutspacerole",
+            "name": "Can add usertryoutspacerole"
+          },
+          {
+            "codename": "change_usertryoutspacerole",
+            "name": "Can change usertryoutspacerole"
+          },
+          {
+            "codename": "delete_usertryoutspacerole",
+            "name": "Can delete usertryoutspacerole"
+          }
+        ]
+      },
+      {
+        "name": "Role Management",
+        "permissions": [
+          {
+            "codename": "view_role",
+            "name": "Can view role"
+          },
+          {
+            "codename": "add_role",
+            "name": "Can add role"
+          },
+          {
+            "codename": "change_role",
+            "name": "Can change role"
+          },
+          {
+            "codename": "delete_role",
+            "name": "Can delete role"
+          }
+        ]
+      },
+      {
+        "name": "Tryoutspacemember Management",
+        "permissions": [
+          {
+            "codename": "view_tryoutspacemember",
+            "name": "Can view tryoutspacemember"
+          },
+          {
+            "codename": "add_tryoutspacemember",
+            "name": "Can add tryoutspacemember"
+          },
+          {
+            "codename": "change_tryoutspacemember",
+            "name": "Can change tryoutspacemember"
+          },
+          {
+            "codename": "delete_tryoutspacemember",
+            "name": "Can delete tryoutspacemember"
+          }
+        ]
+      },
+      {
+        "name": "Owner Management",
+        "permissions": [
+          {
+            "codename": "view_owner",
+            "name": "Can view owner"
+          },
+          {
+            "codename": "add_owner",
+            "name": "Can add owner"
+          },
+          {
+            "codename": "change_owner",
+            "name": "Can change owner"
+          },
+          {
+            "codename": "delete_owner",
+            "name": "Can delete owner"
+          }
+        ]
+      },
+      {
+        "name": "Tryoutaiagent Management",
+        "permissions": [
+          {
+            "codename": "view_tryoutaiagent",
+            "name": "Can view tryoutaiagent"
+          },
+          {
+            "codename": "add_tryoutaiagent",
+            "name": "Can add tryoutaiagent"
+          },
+          {
+            "codename": "change_tryoutaiagent",
+            "name": "Can change tryoutaiagent"
+          },
+          {
+            "codename": "delete_tryoutaiagent",
+            "name": "Can delete tryoutaiagent"
+          }
+        ]
+      }
+    ]
+  }

@@ -1,0 +1,78 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+resume/
+doc.mdx
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Static files
+staticfiles/
+
+# Miscellaneous
+*.swp
+.DS_Store
+.coverage
+.coverage.*
+coverage.xml
+*.mo
+*.pot
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+instance/
+.webassets-cache
+tryoutbotmain-3f44d9722883.json 
+gsmain-383717-3f1c86e330dd.json
+
+# Project-specific
+models_info.json
+ngrok
+poetry.lock
+
+docker-compose-local-db.yml

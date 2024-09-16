@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with AI</title>
+</head>
+<body>
+    <h1>Chat with AI</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="question">Ask a question:</label>
+        <input type="text" id="question" name="question" required>
+        <br>
+        <label for="context">Additional context (optional):</label>
+        <input type="text" id="context" name="context">
+        <br>
+        <button type="submit">Send</button>
+    </form>
+
+    {% if response %}
+        <h2>Response:</h2>
+        <p>{{ response }}</p>
+    {% endif %}
+
+    {% if error %}
+        <h2>Error:</h2>
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>

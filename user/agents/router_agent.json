@@ -1,0 +1,158 @@
+{
+    "name": "Router Agent",
+    "version": "1.0",
+    "description": "An AI agent designed to route user requests to appropriate specialized agents and manage the overall interaction flow",
+    "intents": {
+      "route_request": {
+        "description": "Analyze user input and context to determine the optimal routing plan",
+        "examples": [
+          "I need help with my account settings",
+          "Can you create a new project for me?",
+          "What's the status of my last order?"
+        ]
+      },
+      "execute_routing_plan": {
+        "description": "Execute a determined routing plan by calling appropriate agents in sequence",
+        "examples": [
+          "Process this request using the IntentAgent and then the UserAppAgent",
+          "Route this query through the CategoryAgent and then the DynamicModelAgent",
+          "Handle this interaction using all available agents in the optimal order"
+        ]
+      }
+    },
+    "functions": [
+      {
+        "name": "route_request",
+        "description": "Analyze user input and context to determine the optimal routing plan",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the request"
+            }
+          },
+          "required": ["user_input", "context"]
+        }
+      },
+      {
+        "name": "generate_routing_prompt",
+        "description": "Generate a prompt for the AI model to determine the routing plan",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the request"
+            }
+          },
+          "required": ["user_input", "context"]
+        }
+      },
+      {
+        "name": "get_routing_decision",
+        "description": "Get the routing decision from the AI model based on the generated prompt",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "routing_prompt": {
+              "type": "string",
+              "description": "The generated routing prompt"
+            }
+          },
+          "required": ["routing_prompt"]
+        }
+      },
+      {
+        "name": "execute_routing_plan",
+        "description": "Execute the determined routing plan by calling appropriate agents",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "routing_plan": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "agent": {"type": "string"},
+                  "order": {"type": "integer"},
+                  "task": {"type": "string"},
+                  "dependencies": {"type": "array", "items": {"type": "string"}}
+                }
+              },
+              "description": "The routing plan to execute"
+            },
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the request"
+            }
+          },
+          "required": ["routing_plan", "user_input", "context"]
+        }
+      },
+      {
+        "name": "log_interaction",
+        "description": "Log the user interaction with the agent",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "agent_response": {
+              "type": "string",
+              "description": "The agent's response"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the interaction"
+            }
+          },
+          "required": ["user_input", "agent_response", "context"]
+        }
+      },
+      {
+        "name": "update_user_app_with_results",
+        "description": "Update the UserApp with the results of the routing plan execution",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "description": "The ID of the UserApp to update"
+            },
+            "results": {
+              "type": "object",
+              "description": "The results from executing the routing plan"
+            }
+          },
+          "required": ["app_id", "results"]
+        }
+      }
+    ],
+    "available_agents": [
+      "IntentAgent",
+      "RequestAgent",
+      "DynamicModelAgent",
+      "CategoryAgent",
+      "UserProfileAgent",
+      "PersonaAgent",
+      "AIModelAgent",
+      "UserInteractionAgent",
+      "UserAppAgent"
+    ],
+    "system_instructions": "You are a Router Agent responsible for managing the flow of user interactions across multiple specialized agents. Your primary tasks include analyzing user input, determining the optimal routing plan, and executing that plan by calling the appropriate agents in the correct order. Always ensure that IntentAgent, UserAppAgent, and RequestAgent are included in the routing plan. Be prepared to handle errors and unexpected situations gracefully. Provide clear and concise summaries of the routing process and its results."
+  }

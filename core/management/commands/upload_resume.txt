@@ -1,0 +1,50 @@
+import os
+import logging
+from django.core.management.base import BaseCommand
+from django.core.files import File
+from tscrm.models import ProspectFile
+
+logger = logging.getLogger(__name__)
+
+class Command(BaseCommand):
+    help = 'Upload files from the rootfolder/resume directory as ProspectFile instances'
+
+    def handle(self, *args, **options):
+        root_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        resume_folder = os.path.join(root_folder, 'resume')
+
+        if not os.path.exists(resume_folder):
+            error_message = f"Folder '{resume_folder}' does not exist."
+            logger.error(error_message)
+            self.stdout.write(self.style.ERROR(error_message))
+            return
+
+        uploaded_count = 0
+        total_files = len(os.listdir(resume_folder))
+        logger.info(f"Found {total_files} file(s) in the resume folder.")
+
+        for index, filename in enumerate(os.listdir(resume_folder), start=1):
+            file_path = os.path.join(resume_folder, filename)
+
+            if os.path.isfile(file_path):
+                logger.info(f"Processing file {index}/{total_files}: {filename}")
+                try:
+                    with open(file_path, 'rb') as file:
+                        prospect_file = ProspectFile(file_type='resume')
+                        prospect_file.file.save(filename, File(file))
+                        prospect_file.save()
+
+                        uploaded_count += 1
+                        logger.info(f"File '{filename}' uploaded as ProspectFile.")
+                        self.stdout.write(self.style.SUCCESS(f"File '{filename}' uploaded as ProspectFile."))
+                except Exception as e:
+                    logger.error(f"Error uploading file '{filename}': {str(e)}")
+                    self.stdout.write(self.style.ERROR(f"Error uploading file '{filename}': {str(e)}"))
+
+        if uploaded_count > 0:
+            success_message = f"{uploaded_count}/{total_files} file(s) uploaded successfully."
+            logger.info(success_message)
+            self.stdout.write(self.style.SUCCESS(success_message))
+        else:
+            logger.warning("No files were uploaded.")
+            self.stdout.write(self.style.WARNING("No files were uploaded."))

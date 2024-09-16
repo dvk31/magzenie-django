@@ -1,0 +1,122 @@
+from django.core.management.base import BaseCommand
+from django.apps import apps
+import os
+import json
+from django.conf import settings
+from server.models import PermissionCategory, Permission  
+from django.db import transaction
+
+
+
+class Command(BaseCommand):
+    help = 'Sets up a default server for a user'
+
+    def add_arguments(self, parser):
+        parser.add_argument('user_id', type=str, help='ID of the user for whom to set up the server')
+
+    def get_permission(self, code_name):
+        Permission = apps.get_model('server', 'Permission')
+        try:
+            return Permission.objects.get(code_name=code_name)
+        except Permission.DoesNotExist:
+            return None
+
+    def create_server(self, blueprint):
+        Server = apps.get_model('server', 'Server')
+        server_data = blueprint['Server']['data']
+        return Server.objects.create(**server_data)
+
+    def create_roles(self, server, blueprint, default_roles_blueprint):
+        print("Received Default Roles Blueprint:", default_roles_blueprint)
+        ServerRole = apps.get_model('server', 'ServerRole')
+        RolePermission = apps.get_model('server', 'RolePermission')
+        for role_blueprint in default_roles_blueprint['DefaultRoles']:
+            role_name = role_blueprint['name']
+            role, created = ServerRole.objects.get_or_create(
+                name=role_name, 
+                server=server
+            )
+            if created:
+                for permission_code in role_blueprint.get('permissions', []):
+                    permission = self.get_permission(permission_code)
+                    if permission:
+                        RolePermission.objects.create(role=role, permission=permission)
+
+
+    def create_channels(self, server, blueprint):
+        ServerChannel = apps.get_model('server', 'ServerChannel')
+        for channel_blueprint in blueprint['ServerChannels']:
+            channel_data = channel_blueprint['data']
+            channel_data['server'] = server
+            ServerChannel.objects.create(**channel_data)
+
+    def associate_server_with_user(self, server, user_id):
+        UsersModel = apps.get_model('user', 'UsersModel')
+        user = UsersModel.objects.get(id=user_id)
+
+        ServerOwner = apps.get_model('server', 'ServerOwner')
+        ServerOwner.objects.create(server=server, user=user)
+
+        default_role_name = 'Member'  # This can also be fetched from the blueprint
+        default_role = apps.get_model('server', 'ServerRole').objects.filter(server=server, name=default_role_name).first()
+        if default_role:
+            ServerMember = apps.get_model('server', 'ServerMember')
+            ServerMember.objects.create(role=default_role, server=server, user=user)
+
+    def create_permissions(self, blueprint):
+        Permission = apps.get_model('server', 'Permission')
+        PermissionCategory = apps.get_model('server', 'PermissionCategory')
+
+        for category_data in blueprint['PermissionCategories']:
+            category, _ = PermissionCategory.objects.get_or_create(
+                name=category_data['name'],
+                defaults={'description': category_data.get('description', '')}
+            )
+            for permission_data in category_data['permissions']:
+                Permission.objects.get_or_create(
+                    code_name=permission_data['code_name'],
+                    defaults={
+                        'category': category,
+                        'name': permission_data['name'],
+                        'description': permission_data.get('description', '')
+                    }
+                )
+
+    def handle(self, *args, **kwargs):
+        user_id = kwargs['user_id']
+
+        # Use database transaction to ensure atomicity
+        with transaction.atomic():
+            try:
+                # Load both blueprints
+                server_blueprint_path = os.path.join(settings.BASE_DIR, 'server/models/server_blueprint.json')
+                permission_blueprint_path = os.path.join(settings.BASE_DIR, 'server/models/server_permission.json')
+
+                with open(server_blueprint_path, 'r') as f:
+                    server_blueprint = json.load(f)['blueprint']
+
+                with open(permission_blueprint_path, 'r') as f:
+                    permission_blueprint = json.load(f)['blueprint']
+
+                # Create Permissions
+                self.create_permissions(permission_blueprint)
+
+                # Create the Server
+                server = self.create_server(server_blueprint)
+
+                # Create Roles and associate permissions
+                self.create_roles(server, server_blueprint, permission_blueprint)  # Changed here
+
+                # Create Channels
+                self.create_channels(server, server_blueprint)
+
+                # Associate server with user
+                self.associate_server_with_user(server, user_id)
+
+                self.stdout.write(self.style.SUCCESS(f'Successfully set up server for user {user_id}'))
+                return str(server.id)
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'Failed to set up server: {str(e)}'))
+                raise e
+
+

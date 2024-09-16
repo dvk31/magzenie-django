@@ -1,0 +1,178 @@
+{
+    "name": "User App Management Agent",
+    "version": "1.0",
+    "description": "An AI agent designed to manage user applications, handle intents, and process tasks",
+    "intents": {
+      "create_app": {
+        "description": "Create a new user application",
+        "examples": [
+          "Create a new app for me",
+          "I need an application for task management",
+          "Set up a new app for my project"
+        ]
+      },
+      "update_app": {
+        "description": "Update an existing user application",
+        "examples": [
+          "Update my app's description",
+          "Change the name of my application",
+          "Modify the settings of my app"
+        ]
+      },
+      "link_resource": {
+        "description": "Link a resource to an existing application",
+        "examples": [
+          "Add a document to my app",
+          "Link a task to my project application",
+          "Connect a user to my team app"
+        ]
+      },
+      "get_app_details": {
+        "description": "Retrieve details about a specific user application",
+        "examples": [
+          "Show me the details of my task management app",
+          "What are the settings for my project app?",
+          "Give me information about my team application"
+        ]
+      },
+      "process_task": {
+        "description": "Process a task within the context of a user application",
+        "examples": [
+          "Add a new task to my project app",
+          "Process this request in my support application",
+          "Handle this query using my customer service app"
+        ]
+      }
+    },
+    "functions": [
+      {
+        "name": "get_or_create_app_by_intent",
+        "description": "Get or create a user application based on the given intent",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "intent": {
+              "type": "string",
+              "description": "The determined intent for the user's request"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the request"
+            }
+          },
+          "required": ["user_input", "intent", "context"]
+        }
+      },
+      {
+        "name": "update_app_with_interaction",
+        "description": "Update an application with the latest user interaction",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "description": "The ID of the application to update"
+            },
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the interaction"
+            }
+          },
+          "required": ["app_id", "user_input", "context"]
+        }
+      },
+      {
+        "name": "link_resource_to_app",
+        "description": "Link a resource to an existing application",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "description": "The ID of the application to link the resource to"
+            },
+            "resource_type": {
+              "type": "string",
+              "description": "The type of resource (e.g., 'document', 'task', 'user')"
+            },
+            "resource_id": {
+              "type": "string",
+              "description": "The ID of the resource to link"
+            }
+          },
+          "required": ["app_id", "resource_type", "resource_id"]
+        }
+      },
+      {
+        "name": "update_user_app",
+        "description": "Update the details of a user application",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The ID of the application to update"
+            },
+            "name": {
+              "type": "string",
+              "description": "The new name for the application"
+            },
+            "description": {
+              "type": "string",
+              "description": "The new description for the application"
+            },
+            "is_active": {
+              "type": "boolean",
+              "description": "Whether the application is active or not"
+            }
+          },
+          "required": ["id"]
+        }
+      },
+      {
+        "name": "get_app_details",
+        "description": "Retrieve details about a specific user application",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "app_id": {
+              "type": "string",
+              "description": "The ID of the application to retrieve details for"
+            }
+          },
+          "required": ["app_id"]
+        }
+      },
+      {
+        "name": "process_task",
+        "description": "Process a task within the context of a user application",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "user_input": {
+              "type": "string",
+              "description": "The user's input message"
+            },
+            "task": {
+              "type": "object",
+              "description": "The task details"
+            },
+            "context": {
+              "type": "object",
+              "description": "Additional context for the task"
+            }
+          },
+          "required": ["user_input", "task", "context"]
+        }
+      }
+    ],
+    "system_instructions": "You are an AI assistant specialized in managing user applications. Your primary functions include creating and updating apps, linking resources to apps, retrieving app details, and processing tasks within the context of user apps. Always ensure that you have the necessary information before performing any operation. If you're missing any required details, ask the user for clarification. Provide clear and concise responses about the results of each operation, and be prepared to handle any errors that may occur during the process."
+  }

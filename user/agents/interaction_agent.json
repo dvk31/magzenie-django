@@ -1,0 +1,314 @@
+{
+    "name": "Multi-Agent System",
+    "version": "1.0",
+    "description": "A system of AI agents specialized in intent analysis, context management, and user profile handling",
+    "agents": [
+      {
+        "name": "Intent Analysis Agent",
+        "description": "Analyzes user input to determine and manage intents",
+        "functions": [
+          {
+            "name": "analyze_intent",
+            "description": "Analyze the intent of user input and create or update an Intent",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "user_input": {
+                  "type": "string",
+                  "description": "The user's input message"
+                },
+                "context": {
+                  "type": "object",
+                  "description": "Additional context for the analysis"
+                }
+              },
+              "required": ["user_input", "context"]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Context Management Agent",
+        "description": "Manages and updates context for user interactions",
+        "functions": [
+          {
+            "name": "update_context",
+            "description": "Update the current context with new data",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "current_context": {
+                  "type": "object",
+                  "description": "The current context"
+                },
+                "new_data": {
+                  "type": "object",
+                  "description": "New data to update the context"
+                }
+              },
+              "required": ["current_context", "new_data"]
+            }
+          },
+          {
+            "name": "store_context",
+            "description": "Store the context for a user",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "string",
+                  "description": "The ID of the user"
+                },
+                "context": {
+                  "type": "object",
+                  "description": "The context to store"
+                }
+              },
+              "required": ["user_id", "context"]
+            }
+          },
+          {
+            "name": "retrieve_latest_context",
+            "description": "Retrieve the latest context for a user",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "string",
+                  "description": "The ID of the user"
+                }
+              },
+              "required": ["user_id"]
+            }
+          }
+        ]
+      },
+      {
+        "name": "User Profile Agent",
+        "description": "Manages user profiles, profile types, and profile fields",
+        "functions": [
+          {
+            "name": "process_task",
+            "description": "Process a task related to user profiles",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "user_input": {
+                  "type": "string",
+                  "description": "The user's input message"
+                },
+                "task": {
+                  "type": "string",
+                  "description": "The specific task to perform"
+                },
+                "context": {
+                  "type": "object",
+                  "description": "Additional context for the task"
+                }
+              },
+              "required": ["user_input", "task", "context"]
+            }
+          },
+          {
+            "name": "create_user_profile",
+            "description": "Create a new user profile",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "description": "Data for creating the user profile"
+                }
+              },
+              "required": ["data"]
+            }
+          },
+          {
+            "name": "get_user_profile",
+            "description": "Retrieve a user profile",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "profile_id": {
+                  "type": "string",
+                  "description": "The ID of the user profile"
+                }
+              },
+              "required": ["profile_id"]
+            }
+          },
+          {
+            "name": "update_user_profile",
+            "description": "Update an existing user profile",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "profile_id": {
+                  "type": "string",
+                  "description": "The ID of the user profile to update"
+                },
+                "data": {
+                  "type": "object",
+                  "description": "Data for updating the user profile"
+                }
+              },
+              "required": ["profile_id", "data"]
+            }
+          },
+          {
+            "name": "delete_user_profile",
+            "description": "Delete a user profile",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "profile_id": {
+                  "type": "string",
+                  "description": "The ID of the user profile to delete"
+                }
+              },
+              "required": ["profile_id"]
+            }
+          },
+          {
+            "name": "create_profile_type",
+            "description": "Create a new profile type",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "description": "Data for creating the profile type"
+                }
+              },
+              "required": ["data"]
+            }
+          },
+          {
+            "name": "get_profile_type",
+            "description": "Retrieve a profile type",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "profile_type_id": {
+                  "type": "string",
+                  "description": "The ID of the profile type"
+                }
+              },
+              "required": ["profile_type_id"]
+            }
+          },
+          {
+            "name": "update_profile_type",
+            "description": "Update an existing profile type",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "profile_type_id": {
+                  "type": "string",
+                  "description": "The ID of the profile type to update"
+                },
+                "data": {
+                  "type": "object",
+                  "description": "Data for updating the profile type"
+                }
+              },
+              "required": ["profile_type_id", "data"]
+            }
+          },
+          {
+            "name": "delete_profile_type",
+            "description": "Delete a profile type",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "profile_type_id": {
+                  "type": "string",
+                  "description": "The ID of the profile type to delete"
+                }
+              },
+              "required": ["profile_type_id"]
+            }
+          },
+          {
+            "name": "create_user_profile_field",
+            "description": "Create a new user profile field",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "description": "Data for creating the user profile field"
+                }
+              },
+              "required": ["data"]
+            }
+          },
+          {
+            "name": "get_user_profile_field",
+            "description": "Retrieve a user profile field",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "field_id": {
+                  "type": "string",
+                  "description": "The ID of the user profile field"
+                }
+              },
+              "required": ["field_id"]
+            }
+          },
+          {
+            "name": "update_user_profile_field",
+            "description": "Update an existing user profile field",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "field_id": {
+                  "type": "string",
+                  "description": "The ID of the user profile field to update"
+                },
+                "data": {
+                  "type": "object",
+                  "description": "Data for updating the user profile field"
+                }
+              },
+              "required": ["field_id", "data"]
+            }
+          },
+          {
+            "name": "delete_user_profile_field",
+            "description": "Delete a user profile field",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "field_id": {
+                  "type": "string",
+                  "description": "The ID of the user profile field to delete"
+                }
+              },
+              "required": ["field_id"]
+            }
+          },
+          {
+            "name": "suggest_profile_fields",
+            "description": "Suggest fields for a user profile based on input and profile type",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "user_input": {
+                  "type": "string",
+                  "description": "The user's input message"
+                },
+                "profile_type": {
+                  "type": "string",
+                  "description": "The type of profile"
+                }
+              },
+              "required": ["user_input", "profile_type"]
+            }
+          }
+        ]
+      }
+    ],
+    "system_instructions": "You are a multi-agent system composed of an Intent Analysis Agent, a Context Management Agent, and a User Profile Agent. Your role is to work collaboratively to analyze user intents, manage context across interactions, and handle user profiles. When processing tasks:\n\n1. Use the Intent Analysis Agent to determine the user's intent from their input.\n2. Use the Context Management Agent to update and manage the context of the interaction.\n3. Use the User Profile Agent to create, update, or retrieve user profiles as needed.\n\nAlways ensure that you're using the most relevant and up-to-date information when making decisions or suggestions. When creating or updating user profiles, use AI-generated suggestions for profile fields, but also consider the specific context and any explicit information provided by the user. Be prepared to handle various types of user inputs and profile types, and always strive to provide accurate and helpful responses."
+  }

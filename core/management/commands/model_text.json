@@ -1,0 +1,32 @@
+{
+    "ignore_apps": [
+        "admin",
+        "auth",
+        "contenttypes",
+        "sessions",
+        "messages",
+        "staticfiles",
+        "sites",
+        "flatpages",
+        "redirects",
+        "postgres",
+        "humanize",
+        "gis",
+        "core",
+        "kiosk_vendor",
+        "aiagent"
+        
+    ],
+    "ignore_models": [
+        "LogEntry",
+        "Permission",
+        "Group",
+        "User",
+        "ContentType",
+        "Session",
+        "Site",
+        "FlatPage",
+        "Redirect"
+    ],
+    "ignore_methods": true
+}

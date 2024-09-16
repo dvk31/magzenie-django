@@ -1,0 +1,113 @@
+{
+    "functions": [
+        {
+            "endpoint": {
+                "base_url": "https://dev.withgpt.com/api/v1",
+                "url": "/onboarding/space/feed/{space_id}/create-space-feed/",
+                "method": "POST",
+                "name": "Create Space Feed",
+                "description": "API to create a new space feed",
+                "requires_authentication": true,
+                "payload_structure": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the space feed"
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Description of the space feed"
+                        }
+                    },
+                    "required": ["name"]
+                },
+                "response_structure": {
+                    "status": 201,
+                    "message": "SpaceFeed created successfully",
+                    "data": {
+                        "space_feed": {
+                            "id": "string",
+                            "name": "string",
+                            "description": "string",
+                            "space_id": "string"
+                        },
+                        "space_feed_data": {
+                            "id": "integer",
+                            "name": "string",
+                            "description": "string",
+                            "space_id": "string"
+                        },
+                        "email_data": {
+                            "id": "string",
+                            "space_id": "string",
+                            "space_feed_data_id": "integer",
+                            "space_feed_id": "string"
+                        },
+                        "space_data_source": {
+                            "id": "integer",
+                            "type": "string",
+                            "space_id": "string",
+                            "space_feed_id": "string",
+                            "email_address": "string"
+                        }
+                    }
+                }
+            },
+            "function": {
+                "name": "create_space_feed",
+                "description": "API to create a new space feed",
+                "ui_component": "SpaceFeedCreationForm",
+                "input_parameters": {
+                    "name": "string",
+                    "description": "string"
+                },
+                "output_structure": {
+                    "status": 201,
+                    "message": "SpaceFeed created successfully",
+                    "data": {
+                        "space_feed": {
+                            "id": "string",
+                            "name": "string",
+                            "description": "string",
+                            "space_id": "string"
+                        },
+                        "space_feed_data": {
+                            "id": "integer",
+                            "name": "string",
+                            "description": "string",
+                            "space_id": "string"
+                        },
+                        "email_data": {
+                            "id": "string",
+                            "space_id": "string",
+                            "space_feed_data_id": "integer",
+                            "space_feed_id": "string"
+                        },
+                        "space_data_source": {
+                            "id": "integer",
+                            "type": "string",
+                            "space_id": "string",
+                            "space_feed_id": "string",
+                            "email_address": "string"
+                        }
+                    }
+                },
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the space feed"
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Description of the space feed"
+                        }
+                    },
+                    "required": ["name"]
+                }
+            }
+        }
+    ]
+}
