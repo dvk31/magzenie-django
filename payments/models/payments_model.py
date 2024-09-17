@@ -1,3 +1,5 @@
+#payments/models/payments_model.py
+
 from django.db import models
 from django.conf import settings
 from core.models import BaseModel
@@ -56,24 +58,38 @@ class Subscription(BaseModel):
     def __str__(self):
         return f"Subscription {self.id}: {self.plan.name} for {self.user.email}"
 
-class PaymentMethod(BaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods_payments')
-    method_type = models.CharField(max_length=50)
-    card_number = models.CharField(max_length=16, null=True, blank=True)
-    expiration_date = models.DateField(null=True, blank=True)
-    is_default = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.method_type} - {self.card_number[-4:]}"
-
 class Address(BaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses_payments')
-    street = models.CharField(max_length=255)
+    ADDRESS_TYPES = [
+        ('Billing', 'Billing'),
+        ('Shipping', 'Shipping'),
+        ('Other', 'Other'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses')
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES, default='Other')
+    line1 = models.CharField(max_length=255)
+    line2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
-    is_default = models.BooleanField(default=False)
+    country = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.street}, {self.city}, {self.state}, {self.country}"
+        return f"Address {self.id}: {self.line1}, {self.city}, {self.country}"
+
+
+
+class PaymentMethod(models.Model):
+    METHOD_TYPE_CHOICES = [
+        ('credit_card', 'Credit Card'),
+        ('paypal', 'PayPal'),
+        # Add other payment types as needed
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods')
+    method_type = models.CharField(max_length=50, choices=METHOD_TYPE_CHOICES)
+    last_four_digits = models.CharField(max_length=4)
+    expiry_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.get_method_type_display()} ending with {self.last_four_digits}"

@@ -1,0 +1,210 @@
+openapi: 3.0.0
+info:
+  title: User Settings API
+  version: 1.0.0
+  description: API endpoints for managing user settings
+
+paths:
+  /api/user/settings:
+    get:
+      summary: Retrieve user settings
+      description: Get the current user's settings including profile, subscription, payment methods, addresses, and notification preferences.
+      tags:
+        - User Settings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      summary: Update user settings
+      description: Update the current user's settings.
+      tags:
+        - User Settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserSettingsRequest'
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUserSettingsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    patch:
+      summary: Partially update user settings
+      description: Partially update the current user's settings.
+      tags:
+        - User Settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserSettingsRequest'
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUserSettingsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    UserProfile:
+      type: object
+      properties:
+        full_name:
+          type: string
+        bio:
+          type: string
+        avatar:
+          type: string
+          format: uri
+    
+    Subscription:
+      type: object
+      properties:
+        plan:
+          type: string
+        end_date:
+          type: string
+          format: date
+        active:
+          type: boolean
+    
+    PaymentMethod:
+      type: object
+      properties:
+        card_type:
+          type: string
+        last_four:
+          type: string
+    
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+    
+    NotificationPreferences:
+      type: object
+      properties:
+        email_notifications:
+          type: boolean
+        sms_notifications:
+          type: boolean
+    
+    UserSettings:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        payment_methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentMethod'
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        notification_preferences:
+          $ref: '#/components/schemas/NotificationPreferences'
+    
+    UpdateUserSettingsRequest:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+        current_password:
+          type: string
+        new_password:
+          type: string
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod'
+        address:
+          $ref: '#/components/schemas/Address'
+    
+    UpdateUserSettingsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    BadRequestError:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

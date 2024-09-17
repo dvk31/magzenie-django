@@ -227,7 +227,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
     ),
+    #'EXCEPTION_HANDLER': 'hellogpt.exceptions.custom_exception_handler',
 }
+
 AUTHENTICATION_BACKENDS = [
     #'user.supa_authbackends.SupabaseAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
@@ -261,13 +263,13 @@ SOCIALACCOUNT_PROVIDERS = {
 
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'HelloGPT API',
-    'DESCRIPTION': 'HelloGPT API for managing kiosks, stores, products, and e-commerce operations.',
+    'TITLE': 'Digital Magazine Platform API',
+    'DESCRIPTION': 'API for managing digital magazines, templates, pages, AI-generated content, payments, subscriptions, print orders, media uploads, support, and analytics.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SERVE_PUBLIC': True,
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
-    
+
     'SWAGGER_UI_SETTINGS': {
         'persistAuthorization': True,
         'displayOperationId': True,
@@ -275,40 +277,42 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
-    
+
     'SECURITY': [{'Bearer': []}],
     'SECURITY_DEFINITIONS': {
         'Bearer': {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
-            'description': 'Enter your bearer token in the format **Bearer &lt;token&gt;**'
+            'description': 'Enter your bearer token in the format **Bearer <token>**'
         }
     },
 
     'TAGS': [
-        {'name': 'shopper', 'description': 'Shopper-related operations'},
-        {'name': 'stores', 'description': 'Store management operations'},
-        {'name': 'kiosks', 'description': 'Kiosk management and operations'},
-        {'name': 'products', 'description': 'Product catalog and inventory management'},
-        {'name': 'orders', 'description': 'Order processing and management'},
         {'name': 'users', 'description': 'User management and authentication'},
-        {'name': 'recommendations', 'description': 'AI-powered product recommendations'},
-        {'name': 'analytics', 'description': 'Sales and performance analytics'},
+        {'name': 'magazines', 'description': 'Magazine management operations'},
+        {'name': 'templates', 'description': 'Template management operations'},
+        {'name': 'pages', 'description': 'Page content and management'},
+        {'name': 'ai-processes', 'description': 'AI content generation processes'},
+        {'name': 'payments', 'description': 'Payment and subscription operations'},
+        {'name': 'print-orders', 'description': 'Print order processing and management'},
+        {'name': 'media', 'description': 'Media uploads and management'},
+        {'name': 'support', 'description': 'Support tickets and help articles'},
+        {'name': 'analytics', 'description': 'User behavior and content analytics'},
+        {'name': 'notifications', 'description': 'Notification management'},
     ],
 
     'SORT_OPERATIONS': False,
     'OPERATION_SORTER': 'alpha',
 
     'SERVERS': [
-        {'url': 'https://dev.withgpt.com/', 'description': 'Development server'},
-        {'url': 'https://api.hellogpt-peekshop.com/v1', 'description': 'Production server'},
-        {'url': 'https://staging-api.hellogpt-peekshop.com/v1', 'description': 'Staging server'},
-        {'url': 'https://127.0.0.1:8000/', 'description': 'Local development server'},
+        {'url': 'https://dev.yourmagazineplatform.com/', 'description': 'Development server'},
+        {'url': 'https://api.yourmagazineplatform.com/v1', 'description': 'Production server'},
+        {'url': 'https://staging-api.yourmagazineplatform.com/v1', 'description': 'Staging server'},
+        {'url': 'http://127.0.0.1:8000/', 'description': 'Local development server'},
     ],
 
     'COMPONENT_SPLIT_REQUEST': True,
-    
 
     'APPEND_COMPONENTS': {
         'securitySchemes': {
@@ -319,10 +323,6 @@ SPECTACULAR_SETTINGS = {
             },
         },
     },
-
-    # Comment out hooks if they're not implemented yet
-    # 'PREPROCESSING_HOOKS': ['hellogpt.api.schema.add_custom_endpoints'],
-    # 'POSTPROCESSING_HOOKS': ['hellogpt.api.schema.customize_schema'],
 }
 
 
@@ -463,28 +463,43 @@ load_dotenv(BASE_DIR / '.env')
 # Logging Configuration
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
 
+# settings.py
+
 LOGGING = {
-       'version': 1,
-       'disable_existing_loggers': False,
-       'handlers': {
-           'console': {
-               'class': 'logging.StreamHandler',
-           },
-       },
-       'root': {
-           'handlers': ['console'],
-           'level': 'INFO',
-       },
-       'loggers': {
-           'django': {
-               'handlers': ['console'],
-               'level': 'INFO',
-               'propagate': False,
-           },
-           'user': {  # Add this for your app
-               'handlers': ['console'],
-               'level': 'INFO',
-               'propagate': False,
-           },
-       },
-   }
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+        'users': {  # Replace 'users' with your app name
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # Add other loggers as needed
+    },
+}

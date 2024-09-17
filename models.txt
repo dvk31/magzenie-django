@@ -1,0 +1,657 @@
+File: test_models.py
+*******
+
+*******
+
+File: magazines_model.py
+*******
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+
+class Template(BaseModel):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    preview_image = models.ImageField(upload_to='templates/previews/')
+    
+    def __str__(self):
+        return f"Template {self.id}: {self.name}"
+
+class Magazine(BaseModel):
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('Published', 'Published'),
+        ('Archived', 'Archived'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='magazines')
+    template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True, related_name='magazines')
+    title = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
+    thumbnail = models.ImageField(upload_to='magazines/thumbnails/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Magazine {self.id}: {self.title}"
+
+    def duplicate(self):
+        duplicated_magazine = Magazine.objects.create(
+            user=self.user,
+            template=self.template,
+            title=f"{self.title} (Copy)",
+            status='Draft',
+            thumbnail=self.thumbnail
+        )
+        for page in self.pages.all():
+            duplicated_page = Page.objects.create(
+                magazine=duplicated_magazine,
+                content=page.content,
+                accepted=page.accepted
+            )
+            for qr in page.qrcodes.all():
+                QRCode.objects.create(
+                    page=duplicated_page,
+                    linked_url=qr.linked_url,
+                    color=qr.color,
+                    logo_url=qr.logo_url,
+                    qr_code_url=qr.qr_code_url
+                )
+            for cta in page.ctas.all():
+                CTA.objects.create(
+                    page=duplicated_page,
+                    suggested_cta=cta.suggested_cta,
+                    custom_cta=cta.custom_cta,
+                    linked_url=cta.linked_url
+                )
+        return duplicated_magazine
+
+class AIProcess(BaseModel):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('In_Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+        ('Failed', 'Failed'),
+    ]
+
+    magazine = models.ForeignKey(Magazine, on_delete=models.CASCADE, related_name='ai_processes')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    progress = models.IntegerField(default=0)
+    estimated_time_remaining = models.CharField(max_length=50, default='N/A')
+
+    def __str__(self):
+        return f"AIProcess {self.id} for {self.magazine.title}"
+
+class Page(BaseModel):
+    magazine = models.ForeignKey(Magazine, on_delete=models.CASCADE, related_name='pages')
+    content = models.JSONField()
+    accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Page {self.id} of {self.magazine.title}"
+
+class QRCode(BaseModel):
+    page = models.ForeignKey(Page, on_delete=models.CASCADE, related_name='qrcodes')
+    linked_url = models.URLField()
+    color = models.CharField(max_length=50, default='#000000')
+    logo_url = models.URLField(null=True, blank=True)
+    qr_code_url = models.URLField()
+
+    def __str__(self):
+        return f"QRCode {self.id} for Page {self.page.id}"
+
+class CTA(BaseModel):
+    page = models.OneToOneField(Page, on_delete=models.CASCADE, related_name='ctas')
+    suggested_cta = models.CharField(max_length=255)
+    custom_cta = models.CharField(max_length=255, null=True, blank=True)
+    linked_url = models.URLField()
+
+    def __str__(self):
+        return f"CTA {self.id} for Page {self.page.id}"
+
+class GeneratedContent(BaseModel):
+    page = models.OneToOneField(Page, on_delete=models.CASCADE, related_name='generated_content')
+    content = models.JSONField()
+    accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Generated Content {self.id} for Page {self.page.id}"
+*******
+
+File: models.py
+*******
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+
+class Payment(BaseModel):
+    PURPOSE_CHOICES = [
+        ('Subscription', 'Subscription'),
+        ('PrintOrder', 'Print Order'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
+    amount = models.FloatField()
+    currency = models.CharField(max_length=10)
+    payment_method = models.ForeignKey('PaymentMethod', on_delete=models.SET_NULL, null=True, related_name='payments')
+    billing_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='billing_payments')
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
+    order = models.ForeignKey('print_orders.PrintOrder', on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
+    transaction_id = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=20, default='Completed')
+
+    def __str__(self):
+        return f"Payment {self.id}: {self.transaction_id} by {self.user.email}"
+
+class PromoCode(BaseModel):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.FloatField()
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.discount_percentage}% off"
+
+class SubscriptionPlan(BaseModel):
+    PLAN_CHOICES = [
+        ('Free', 'Free'),
+        ('Standard', 'Standard'),
+        ('Premium', 'Premium'),
+    ]
+
+    name = models.CharField(max_length=50, choices=PLAN_CHOICES, unique=True)
+    price = models.FloatField()
+    duration_months = models.IntegerField()
+    description = models.TextField()
+
+    def __str__(self):
+        return f"SubscriptionPlan {self.id}: {self.name}"
+
+class Subscription(BaseModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscription')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.SET_NULL, null=True)
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Subscription {self.id}: {self.plan.name} for {self.user.email}"
+
+class PaymentMethod(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods_payments')
+    method_type = models.CharField(max_length=50)
+    card_number = models.CharField(max_length=16, null=True, blank=True)
+    expiration_date = models.DateField(null=True, blank=True)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.method_type} - {self.card_number[-4:]}"
+
+class Address(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses_payments')
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.street}, {self.city}, {self.state}, {self.country}"
+
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: payments_model.py
+*******
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+
+class Payment(BaseModel):
+    PURPOSE_CHOICES = [
+        ('Subscription', 'Subscription'),
+        ('PrintOrder', 'Print Order'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
+    amount = models.FloatField()
+    currency = models.CharField(max_length=10)
+    payment_method = models.ForeignKey('PaymentMethod', on_delete=models.SET_NULL, null=True, related_name='payments')
+    billing_address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, related_name='billing_payments')
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
+    order = models.ForeignKey('print_orders.PrintOrder', on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
+    transaction_id = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=20, default='Completed')
+
+    def __str__(self):
+        return f"Payment {self.id}: {self.transaction_id} by {self.user.email}"
+
+class PromoCode(BaseModel):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.FloatField()
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.discount_percentage}% off"
+
+class SubscriptionPlan(BaseModel):
+    PLAN_CHOICES = [
+        ('Free', 'Free'),
+        ('Standard', 'Standard'),
+        ('Premium', 'Premium'),
+    ]
+
+    name = models.CharField(max_length=50, choices=PLAN_CHOICES, unique=True)
+    price = models.FloatField()
+    duration_months = models.IntegerField()
+    description = models.TextField()
+
+    def __str__(self):
+        return f"SubscriptionPlan {self.id}: {self.name}"
+
+class Subscription(BaseModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscription')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.SET_NULL, null=True)
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Subscription {self.id}: {self.plan.name} for {self.user.email}"
+
+class PaymentMethod(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods_payments')
+    method_type = models.CharField(max_length=50)
+    card_number = models.CharField(max_length=16, null=True, blank=True)
+    expiration_date = models.DateField(null=True, blank=True)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.method_type} - {self.card_number[-4:]}"
+
+class Address(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses_payments')
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.street}, {self.city}, {self.state}, {self.country}"
+
+*******
+
+File: models.py
+*******
+# analytics/models.py
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+from magazines.models import Page
+
+class PageView(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    page = models.ForeignKey(Page, on_delete=models.CASCADE, related_name='views')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    device_type = models.CharField(max_length=50)
+    duration = models.IntegerField()
+
+    def __str__(self):
+        return f"PageView {self.id} on Page {self.page.id} at {self.timestamp}"
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: analytics_model.py
+*******
+from django.db import models
+
+class AnalyticsModel(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: notifications_model.py
+*******
+from django.db import models
+
+class NotificationsModel(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+*******
+
+File: models.py
+*******
+
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: support_model.py
+*******
+# support/models.py
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+
+class FAQ(BaseModel):
+    CATEGORY_CHOICES = [
+        ('General', 'General'),
+        ('Technical', 'Technical'),
+        ('Billing', 'Billing'),
+        ('Print Orders', 'Print Orders'),
+        ('Other', 'Other'),
+    ]
+
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+
+    def __str__(self):
+        return f"FAQ {self.id}: {self.question} in {self.category}"
+
+class HelpArticle(BaseModel):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    snippet = models.CharField(max_length=500)
+
+    def __str__(self):
+        return f"HelpArticle {self.id}: {self.title}"
+
+class SupportTicket(BaseModel):
+    CATEGORY_CHOICES = [
+        ('Technical Issue', 'Technical Issue'),
+        ('Billing', 'Billing'),
+        ('Print Orders', 'Print Orders'),
+        ('Other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('Open', 'Open'),
+        ('In Progress', 'In Progress'),
+        ('Resolved', 'Resolved'),
+        ('Closed', 'Closed'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='support_tickets')
+    subject = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    attachments = models.JSONField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
+    response = models.TextField(null=True, blank=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"SupportTicket {self.id}: {self.subject} by {self.user.email}"
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: media_model.py
+*******
+# media/models.py
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+
+class Media(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='media')
+    file = models.FileField(upload_to='uploaded_media/')
+    media_url = models.URLField()
+
+    def __str__(self):
+        return f"Media {self.id} uploaded by {self.user.email}"
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: users_model.py
+*******
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.conf import settings
+from core.models import BaseModel
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+    
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+    
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+    
+        return self.create_user(email, password, **extra_fields)
+
+class User(AbstractBaseUser, PermissionsMixin, BaseModel):
+    email = models.EmailField(unique=True, max_length=255)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return f"User {self.id}: {self.email}"
+
+class UserProfile(BaseModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    full_name = models.CharField(max_length=255)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+
+    def __str__(self):
+        return f"UserProfile {self.id}: {self.full_name}"
+
+class Address(BaseModel):
+    ADDRESS_TYPES = [
+        ('Billing', 'Billing'),
+        ('Shipping', 'Shipping'),
+        ('Other', 'Other'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses')
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES, default='Other')
+    line1 = models.CharField(max_length=255)
+    line2 = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"Address {self.id}: {self.line1}, {self.city}, {self.country}"
+
+class PaymentMethod(BaseModel):
+    PAYMENT_TYPES = [
+        ('Credit Card', 'Credit Card'),
+        ('Debit Card', 'Debit Card'),
+        ('PayPal', 'PayPal'),
+        ('Other', 'Other'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payment_methods')
+    type = models.CharField(max_length=50, choices=PAYMENT_TYPES)
+    last_four_digits = models.CharField(max_length=4)
+    expiry_date = models.DateField()
+
+    def __str__(self):
+        return f"PaymentMethod {self.id}: {self.type} ending with {self.last_four_digits}"
+
+class NotificationPreferences(BaseModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notification_preferences')
+    email_notifications = models.JSONField(default=dict)
+    sms_notifications = models.JSONField(default=dict)
+
+    def __str__(self):
+        return f"NotificationPreferences {self.id} for {self.user.email}"
+
+class Notification(BaseModel):
+    NOTIFICATION_TYPES = [
+        ('Message', 'Message'),
+        ('Alert', 'Alert'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification {self.id}: {self.type} for {self.user.email} at {self.timestamp}"
+*******
+
+File: models.py
+*******
+
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: print_orders_model.py
+*******
+# print_orders/models.py
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+from magazines.models import Magazine
+from payments.models import PaymentMethod, Address, PromoCode
+import datetime
+
+class PrintOption(BaseModel):
+    OPTION_TYPES = [
+        ('paper_type', 'Paper Type'),
+        ('finish', 'Finish'),
+        ('size', 'Size'),
+        ('shipping', 'Shipping'),
+    ]
+
+    option_type = models.CharField(max_length=50, choices=OPTION_TYPES)
+    name = models.CharField(max_length=100)
+    price_per_unit = models.FloatField(null=True, blank=True)
+    additional_cost = models.FloatField(null=True, blank=True)
+    dimensions = models.CharField(max_length=50, null=True, blank=True)
+    estimated_delivery = models.CharField(max_length=100, null=True, blank=True)
+    cost = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"PrintOption {self.id}: {self.get_option_type_display()} - {self.name}"
+
+class PrintOrder(BaseModel):
+    STATUS_CHOICES = [
+        ('Processing', 'Processing'),
+        ('Printed', 'Printed'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='print_orders')
+    magazine = models.ForeignKey(Magazine, on_delete=models.CASCADE, related_name='print_orders')
+    quantity = models.IntegerField()
+    paper_type = models.ForeignKey(PrintOption, on_delete=models.SET_NULL, null=True, related_name='print_orders_paper')
+    finish = models.ForeignKey(PrintOption, on_delete=models.SET_NULL, null=True, related_name='print_orders_finish')
+    size = models.ForeignKey(PrintOption, on_delete=models.SET_NULL, null=True, related_name='print_orders_size')
+    shipping_method = models.ForeignKey(PrintOption, on_delete=models.SET_NULL, null=True, related_name='print_orders_shipping')
+    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, related_name='print_orders_shipping_address')
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, related_name='print_orders_payment_method')
+    billing_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, related_name='print_orders_billing_address')
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.SET_NULL, null=True, blank=True, related_name='print_orders_promo_codes')
+    agree_terms = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Processing')
+    estimated_delivery_date = models.DateField()
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    carrier = models.CharField(max_length=100, null=True, blank=True)
+    total_cost = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"PrintOrder {self.id} by {self.user.email}"
+
+    def calculate_total_cost(self):
+        base_cost = self.quantity * self.paper_type.price_per_unit
+        finish_cost = self.quantity * self.finish.additional_cost
+        shipping_cost = self.shipping_method.cost
+        taxes = (base_cost + finish_cost + shipping_cost) * 0.1
+        discount = 0.0
+        if self.promo_code and self.promo_code.is_active and self.promo_code.valid_from <= datetime.datetime.now() <= self.promo_code.valid_to:
+            discount = base_cost * (self.promo_code.discount_percentage / 100)
+        self.total_cost = base_cost + finish_cost + shipping_cost + taxes - discount
+        self.save()
+
+    def save(self, *args, **kwargs):
+        if not self.total_cost:
+            self.calculate_total_cost()
+        super().save(*args, **kwargs)
+*******
+
+File: test_models.py
+*******
+
+*******
+
+File: digital_setup_model.py
+*******
+# digital_setup/models.py
+from django.db import models
+from django.conf import settings
+from core.models import BaseModel
+from magazines.models import Magazine
+
+class DigitalSettings(BaseModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='digital_settings')
+    enable_kiosk_mode = models.BooleanField(default=False)
+    auto_launch_magazine = models.BooleanField(default=False)
+    selected_magazine = models.ForeignKey(Magazine, on_delete=models.SET_NULL, null=True, blank=True, related_name='digital_settings')
+
+    def __str__(self):
+        return f"DigitalSettings {self.id} for {self.user.email}"
+*******
+

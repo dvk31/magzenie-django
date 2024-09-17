@@ -1,0 +1,22 @@
+openapi: 3.0.0
+info:
+  title: Complete API
+  version: 1.0.0
+  description: Comprehensive API documentation
+
+paths:
+  /api/user/settings:
+    $ref: './user_settings_api.yaml#/paths/~1api~1user~1settings'
+  /api/products:
+    $ref: './products_api.yaml#/paths/~1api~1products'
+  /api/orders:
+    $ref: './orders_api.yaml#/paths/~1api~1orders'
+
+components:
+  schemas:
+    UserSettings:
+      $ref: './user_settings_api.yaml#/components/schemas/UserSettings'
+    Product:
+      $ref: './products_api.yaml#/components/schemas/Product'
+    Order:
+      $ref: './orders_api.yaml#/components/schemas/Order'

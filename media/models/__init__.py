@@ -1,1 +1,1 @@
-from .media_model import MediaModel
+from .media_model import *
