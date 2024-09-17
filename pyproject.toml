@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "onltheflyapp"
+name = "magzenie"
 version = "0.1.0"
 description = "Backend for Onltheflyapp.ai,  ai powered apps that talk to each other on the fly based on your intent"
 authors = ["Your Name <your.email@example.com>"]

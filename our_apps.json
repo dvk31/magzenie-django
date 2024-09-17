@@ -1,0 +1,13 @@
+{
+    "our_apps": [
+      "magazines.apps.MagazinesConfig",
+      "payments.apps.PaymentsConfig",
+      "analytics.apps.AnalyticsConfig",
+      "notifications.apps.NotificationsConfig",
+      "support.apps.SupportConfig",
+      "media.apps.MediaConfig",
+      "users.apps.UsersConfig",
+      "print_orders.apps.PrintOrdersConfig",
+      "digital_setup.apps.DigitalSetupConfig"
+    ]
+  }

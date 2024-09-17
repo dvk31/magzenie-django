@@ -1,0 +1,1 @@
+from .digital_setup_view import Digital_setupView
