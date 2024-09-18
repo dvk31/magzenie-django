@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     'print_orders.apps.PrintOrdersConfig',
     'digital_setup.apps.DigitalSetupConfig',
     'core.apps.CoreConfig',
+    'api.apps.ApiConfig',
+    
 ]
 
 MIDDLEWARE = [
