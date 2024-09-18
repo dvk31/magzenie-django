@@ -1,13 +1,14 @@
 # users/urls.py
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from users.views import AuthViewSet, PasswordResetViewSet, UserSettingsViewSet
+# users/urls.py
 
-router = DefaultRouter()
-router.register(r'auth', AuthViewSet, basename='auth')
-router.register(r'password-reset', PasswordResetViewSet, basename='password-reset')
-router.register(r'user-settings', UserSettingsViewSet, basename='user-settings')
+from django.urls import path
+from users.views.custom_admin_view import custom_admin_login
+from users.views.auth.test_auth import test_auth
+
+print("Users URLs are being loaded!")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('admin/login/',custom_admin_login, name='custom_admin_login'),
+    path('test-auth/', test_auth, name='test_auth')
 ]
+

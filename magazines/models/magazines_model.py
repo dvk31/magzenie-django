@@ -2,13 +2,31 @@ from django.db import models
 from django.conf import settings
 from core.models import BaseModel
 
+class MagazineType(BaseModel):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name
+
 class Template(BaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    preview_image = models.ImageField(upload_to='templates/previews/')
-    
+    magazine_type = models.ForeignKey(MagazineType, on_delete=models.SET_NULL, null=True, related_name='templates')
+    thumbnail_image = models.ImageField(upload_to='templates/thumbnails/')
+    image = models.ImageField(upload_to='templates/images/')
+    structure = models.JSONField()
+
     def __str__(self):
         return f"Template {self.id}: {self.name}"
+
+class TemplateExample(BaseModel):
+    template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='examples')
+    example_image = models.ImageField(upload_to='templates/examples/')
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Example {self.id} for Template {self.template.name}"
 
 class Magazine(BaseModel):
     STATUS_CHOICES = [
@@ -18,6 +36,7 @@ class Magazine(BaseModel):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='magazines')
+    magazine_type = models.ForeignKey(MagazineType, on_delete=models.SET_NULL, null=True, related_name='magazines')
     template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True, related_name='magazines')
     title = models.CharField(max_length=255)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
@@ -29,6 +48,7 @@ class Magazine(BaseModel):
     def duplicate(self):
         duplicated_magazine = Magazine.objects.create(
             user=self.user,
+            magazine_type=self.magazine_type,
             template=self.template,
             title=f"{self.title} (Copy)",
             status='Draft',
@@ -48,12 +68,12 @@ class Magazine(BaseModel):
                     logo_url=qr.logo_url,
                     qr_code_url=qr.qr_code_url
                 )
-            for cta in page.ctas.all():
+            if hasattr(page, 'ctas'):
                 CTA.objects.create(
                     page=duplicated_page,
-                    suggested_cta=cta.suggested_cta,
-                    custom_cta=cta.custom_cta,
-                    linked_url=cta.linked_url
+                    suggested_cta=page.ctas.suggested_cta,
+                    custom_cta=page.ctas.custom_cta,
+                    linked_url=page.ctas.linked_url
                 )
         return duplicated_magazine
 

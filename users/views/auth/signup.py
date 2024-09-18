@@ -4,11 +4,10 @@ from rest_framework import status, serializers
 from rest_framework.permissions import AllowAny
 from django.db import transaction
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from django.shortcuts import get_object_or_404
 from django.conf import settings
 from supabase import create_client
 from gotrue.errors import AuthApiError
-from user.models import UsersModel, Role, PartnerStore
+from users.models import User, UserProfile
 import logging
 import uuid
 
@@ -18,13 +17,10 @@ class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
     full_name = serializers.CharField(required=True)
     username = serializers.CharField(required=False)
-    role_id = serializers.UUIDField(required=False)
-    store_url = serializers.URLField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
-        model = UsersModel
-        fields = ['email', 'password', 'full_name', 'username', 'role_id', 'store_url']
-
+        model = User
+        fields = ['email', 'password', 'full_name', 'username']
 
 class UserSignupView(APIView):
     permission_classes = [AllowAny]
@@ -54,9 +50,6 @@ class UserSignupView(APIView):
                 supabase_response = self.get_or_create_supabase_user(serializer.validated_data)
                 django_user = self.get_or_create_django_user(supabase_response.user, serializer.validated_data)
                 
-                # Associate user with a PartnerStore if store_url is provided
-                self.associate_partner_store(django_user, serializer.validated_data.get('store_url'))
-                
                 response_data = self.prepare_response(django_user, supabase_response)
                 return Response(response_data, status=status.HTTP_201_CREATED)
         except serializers.ValidationError as e:
@@ -81,43 +74,42 @@ class UserSignupView(APIView):
                 raise
 
     def get_or_create_django_user(self, supabase_user, validated_data):
-        user, created = UsersModel.objects.get_or_create(
-            id=uuid.UUID(supabase_user.id),
+        # First, get or create the Users instance (Supabase user)
+        supabase_user_instance, _ = Users.objects.get_or_create(
+            id=supabase_user.id,
             defaults={
                 'email': validated_data['email'],
-                'full_name': validated_data['full_name'],
-                'username': validated_data.get('username', validated_data['email']),
-                'roles_id': validated_data.get('role_id')
+                # Add other fields from Supabase user data as needed
             }
         )
+
+        # Now, get or create the User instance (Django user)
+        user, created = User.objects.get_or_create(
+            supabase_user=supabase_user_instance,
+            defaults={
+                'email': validated_data['email'],
+                'username': validated_data.get('username', User.objects.generate_unique_username()),
+            }
+        )
+
         if not created:
-            user.full_name = validated_data['full_name']
-            user.username = validated_data.get('username', validated_data['email'])
-            user.roles_id = validated_data.get('role_id')
+            user.username = validated_data.get('username', user.username)
             user.save()
+
+        # Update or create UserProfile
+        UserProfile.objects.update_or_create(
+            user=user,
+            defaults={'full_name': validated_data['full_name']}
+        )
+
         return user
-
-    def associate_partner_store(self, user, store_url=None):
-        try:
-            if store_url:
-                store = get_object_or_404(PartnerStore, store_url=store_url)
-                user.owned_stores.add(store)
-                user.is_partner = True
-                user.save()
-
-        except PartnerStore.DoesNotExist:
-            logger.error(f"Store with URL {store_url} does not exist")
-            raise serializers.ValidationError(f"Store with URL {store_url} does not exist")
-        except Exception as e:
-            logger.error(f"Association with PartnerStore failed for user {user.id}: {str(e)}")
-            raise
 
     def prepare_response(self, user, supabase_response):
         return {
             "message": "User created or updated successfully",
             "user_id": str(user.id),
+            "supabase_user_id": str(user.supabase_user.id),  # Add this line
             "username": user.username,
-            "role": user.roles.name if user.roles else None,
             "access_token": supabase_response.session.access_token if supabase_response.session else None,
             "refresh_token": supabase_response.session.refresh_token if supabase_response.session else None,
         }

@@ -12,8 +12,6 @@ from django.contrib.auth import get_user_model
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-logger = logging.getLogger(__name__)
-
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
@@ -49,23 +47,25 @@ class LoginView(APIView):
             auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
 
             # Extract user data and session from the response
-            user = auth_response.user
+            supabase_user = auth_response.user
             session = auth_response.session
 
-            if not user or not session:
+            if not supabase_user or not session:
                 return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Fetch the corresponding Django user
             try:
-                django_user = User.objects.get(id=user.id)
+                django_user = User.objects.get(supabase_user_id=supabase_user.id)
             except User.DoesNotExist:
-                logger.error(f"Django user not found for Supabase user ID: {user.id}")
+                logger.error(f"Django user not found for Supabase user ID: {supabase_user.id}")
                 return Response({"error": "User account not properly set up"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             response_data = {
                 "message": "Login successful",
-                "user_id": django_user.id,
+                "user_id": str(django_user.id),  # Convert UUID to string
                 "username": django_user.username,
+                "email": django_user.email,
+                "full_name": django_user.profile.full_name if hasattr(django_user, 'profile') else None,
                 "access_token": session.access_token,
                 "refresh_token": session.refresh_token,
             }

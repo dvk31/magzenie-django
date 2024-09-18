@@ -1,0 +1,1 @@
+from .supa_middleware import SupabaseAuthMiddleware

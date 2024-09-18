@@ -6,7 +6,7 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema
 from django.conf import settings
 from supabase import create_client, Client
-from user.models import UsersModel
+from users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -33,18 +33,22 @@ class CustomLoginView(APIView):
 
             access_token = auth_response.session.access_token
             refresh_token = auth_response.session.refresh_token
+            supabase_user_id = auth_response.user.id
 
             try:
-                user = UsersModel.objects.get(email=email)
-                role = user.role
-            except UsersModel.DoesNotExist:
-                logger.error(f"User with email {email} exists in Supabase but not in Django database")
+                user = User.objects.get(supabase_user_id=supabase_user_id)
+                full_name = user.profile.full_name if hasattr(user, 'profile') else None
+            except User.DoesNotExist:
+                logger.error(f"User with Supabase ID {supabase_user_id} exists in Supabase but not in Django database")
                 return Response({"detail": "User account issue. Please contact support."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             response = Response({
                 "access_token": access_token,
                 "refresh_token": refresh_token,
-                "role": role
+                "user_id": str(user.id),
+                "email": user.email,
+                "username": user.username,
+                "full_name": full_name
             }, status=status.HTTP_200_OK)
 
             response.set_cookie(
@@ -62,17 +66,6 @@ class CustomLoginView(APIView):
             logger.error(traceback.format_exc())
             return Response({"detail": "An error occurred while processing your request."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-import logging
-import traceback
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from drf_spectacular.utils import extend_schema
-from django.conf import settings
-from supabase import create_client, Client
-
-logger = logging.getLogger(__name__)
 
 class CustomTokenRefreshView(APIView):
     @extend_schema(tags=["Authentication"])

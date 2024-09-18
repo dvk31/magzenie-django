@@ -70,3 +70,19 @@ class BaseModel(JSONSerializableMixin, models.Model):
                 except json.JSONDecodeError:
                     return attr
         return attr
+
+
+
+from django.db import models
+from django.conf import settings
+
+class SupabaseAuth(models.Model):
+    mapped_user = models.OneToOneField(
+        'users.MappedUsers',
+        on_delete=models.CASCADE,
+        related_name='django_user'
+    )
+  
+
+    class Meta:
+        abstract = True
