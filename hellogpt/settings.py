@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 
     # Third-Party Apps
     'rest_framework',
+    'rest_framework.authtoken',
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'django_extensions',
@@ -216,15 +217,14 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSION': 'v1',
     'ALLOWED_VERSIONS': ['v1'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'users.auth_backends.SupabaseTokenAuthentication',  # Add this line
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        # 'userapp.authentication.APIKeyAuthentication',  # Uncomment if needed
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',  # Change this to require authentication by default
     ),
-    # 'EXCEPTION_HANDLER': 'hellogpt.exceptions.custom_exception_handler',
 }
 
 # -------------------------------------------------------------------
@@ -232,7 +232,7 @@ REST_FRAMEWORK = {
 # -------------------------------------------------------------------
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=360),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,

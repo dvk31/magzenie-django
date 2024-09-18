@@ -1,22 +1,19 @@
-#users/auth_backends.py
+# users/auth_backends.py
 
+import logging
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+from rest_framework import authentication
+from rest_framework import exceptions
 from supabase import create_client, Client
 from django.conf import settings
-import logging
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
-# users/auth_backends.py
-import logging
-from django.contrib.auth.backends import ModelBackend
-from supabase import create_client, Client
-from django.conf import settings
-
-logger = logging.getLogger(__name__)
+def get_supabase_client():
+    return create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 class SupabaseAuthBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
@@ -27,7 +24,7 @@ class SupabaseAuthBackend(ModelBackend):
             return None
 
         try:
-            supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+            supabase = get_supabase_client()
             logger.debug(f"Attempting to sign in with Supabase for user: {username}")
             response = supabase.auth.sign_in_with_password({"email": username, "password": password})
             logger.debug(f"Supabase sign_in_with_password response: {response}")
@@ -80,3 +77,30 @@ class SupabaseAuthBackend(ModelBackend):
             logger.debug("User is anonymous, returning False")
             return False
         return user_obj.is_super_admin
+
+class SupabaseTokenAuthentication(authentication.BaseAuthentication):
+    def authenticate(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if not auth_header:
+            return None
+
+        try:
+            auth_type, token = auth_header.split()
+            if auth_type.lower() != 'bearer':
+                return None
+
+            supabase = get_supabase_client()
+            user_data = supabase.auth.get_user(token)
+            
+            if not user_data or not user_data.user:
+                raise exceptions.AuthenticationFailed('Invalid token')
+            
+            user, created = User.objects.get_or_create(
+                email=user_data.user.email,
+                defaults={'username': user_data.user.email}
+            )
+            
+            return (user, token)
+        except Exception as e:
+            logger.exception(f"Error during Supabase token authentication: {str(e)}")
+            raise exceptions.AuthenticationFailed('Invalid token')
